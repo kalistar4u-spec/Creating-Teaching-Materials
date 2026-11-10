@@ -1,5 +1,21 @@
 import { test,expect } from '@playwright/test';
-import { getExercises,levels,lessons,practiceCount,modelLines,pdfName } from '../src/content.mjs';
+import { getExercises,levels,lessons,practiceCount,modelLines,pdfName,assessExpression } from '../src/content.mjs';
+
+test('scrambled sentence tokens are not presented in answer order',()=>{
+ for(const level of levels) for(const lesson of lessons) for(const q of getExercises(lesson.id,level.id)) if(q.type==='order') expect(q.tokens?.join(' ')).not.toBe(q.answer);
+});
+test('writing and speaking expressions receive formative feedback and export for the teacher',async({page})=>{
+ await page.goto('#lesson-1');await page.getByRole('tab',{name:'3 말하고 쓰기'}).click();
+ const first=page.locator('.writing-field').first();
+ await first.locator('textarea').fill('I read books every day.');
+ await first.getByRole('textbox',{name:'말한 문장 응답 1'}).fill('I read books every day.');
+ await expect(first.locator('.response-check').nth(0)).toContainText('3/3');
+ await expect(first.locator('.response-check').nth(1)).toContainText('3/3');
+ const download=page.waitForEvent('download');await page.getByRole('button',{name:'교사 피드백 저장'}).click();
+ const file=await download;expect(file.suggestedFilename()).toContain('teacher-feedback.csv');
+ expect(assessExpression('I read books every day.',1).score).toBe(3);
+ expect(assessExpression('',1).tips.length).toBeGreaterThan(0);
+});
 
 for(const level of levels) for(const lesson of lessons) test(level.id+' lesson '+lesson.id+' complete and persist',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
