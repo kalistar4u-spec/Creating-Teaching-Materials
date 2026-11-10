@@ -9,11 +9,16 @@ test('writing and speaking expressions receive formative feedback and export for
  const first=page.locator('.writing-field').first();
  await first.locator('textarea').fill('I read books every day.');
  await first.getByRole('textbox',{name:'말한 문장 응답 1'}).fill('I read books every day.');
+ await first.getByRole('button',{name:'정답·표현 확인'}).click();
  await expect(first.locator('.response-check').nth(0)).toContainText('3/3');
  await expect(first.locator('.response-check').nth(1)).toContainText('3/3');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'교사 피드백 저장'}).click();
  const file=await download;expect(file.suggestedFilename()).toContain('teacher-feedback.csv');
  expect(assessExpression('I read books every day.',1).score).toBe(3);
+ await first.locator('textarea').fill('I eats vegetables every day.');
+ await first.getByRole('button',{name:'정답·표현 확인'}).click();
+ await expect(first.locator('mark')).toContainText('eats');
+ await expect(first.locator('.response-example').first()).toContainText('I eat vegetables every day.');
  expect(assessExpression('',1).tips.length).toBeGreaterThan(0);
 });
 
