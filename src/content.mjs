@@ -104,7 +104,11 @@ export function assessExpression(value,lessonId) {
  const tips=dimensions.filter(d=>!d.ok).map(d=>d.tip);
  if(text && !/[.!?]$/.test(text)) tips.push('문장 끝에 마침표나 물음표를 붙여 보세요.');
  if(!text) tips.push('응답을 입력하거나 말한 문장을 받아 적어 보세요.');
- return {score,max:3,dimensions,tips,summary:score===3?'핵심 표현이 잘 보여요. 소리 내어 읽고 뜻이 맞는지 확인해요.':score===0?'표현 도움말을 보며 한 문장씩 다시 만들어 봐요.':'좋은 시작이에요. 안내된 표현을 보완해 다시 확인해요.'};
+ const activityOptions=['eat vegetables','drink water','brush my teeth','wash my hands','exercise','go to the library','read books','draw pictures','play badminton'];
+ const selected=activityOptions.find(a=>a.split(' ').every(word=>new RegExp('\\b'+word+'(?:s|es)?\\b').test(lower)))||'read books';
+ const chosenFrequency=lower.match(new RegExp(freq,'i'))?.[0]||'every day';
+ const example=hasQuestion?'How often do you '+selected.replaceAll('my ','your ')+'?':'I '+selected+' '+chosenFrequency+'.';
+ return {score,max:3,dimensions,tips,example,summary:score===3?'핵심 표현이 잘 보여요. 소리 내어 읽고 뜻이 맞는지 확인해요.':score===0?'표현 도움말을 보며 한 문장씩 다시 만들어 봐요.':'좋은 시작이에요. 안내된 표현을 보완해 다시 확인해요.'};
 }
 export const modelLines = ['I read books every day.','I draw pictures twice a week.','I go to the library once a week.','I exercise three times a week.','I play badminton twice a week.','I drink water every day.'];
 export const practicePrompts = {
