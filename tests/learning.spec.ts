@@ -4,14 +4,12 @@ import { getExercises,levels,lessons,practiceCount,modelLines,pdfName,assessExpr
 test('scrambled sentence tokens are not presented in answer order',()=>{
  for(const level of levels) for(const lesson of lessons) for(const q of getExercises(lesson.id,level.id)) if(q.type==='order') expect(q.tokens?.join(' ')).not.toBe(q.answer);
 });
-test('writing and speaking expressions receive formative feedback and export for the teacher',async({page})=>{
+test('writing feedback highlights errors and unlocks listening and pair work',async({page})=>{
  await page.goto('#lesson-1');await page.getByRole('tab',{name:'3 말하고 쓰기'}).click();
  const first=page.locator('.writing-field').first();
  await first.locator('textarea').fill('I read books every day.');
- await first.getByRole('textbox',{name:'말한 문장 응답 1'}).fill('I read books every day.');
  await first.getByRole('button',{name:'정답·표현 확인'}).click();
  await expect(first.locator('.response-check').nth(0)).toContainText('3/3');
- await expect(first.locator('.response-check').nth(1)).toContainText('3/3');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'교사 피드백 저장'}).click();
  const file=await download;expect(file.suggestedFilename()).toContain('teacher-feedback.csv');
  expect(assessExpression('I read books every day.',1).score).toBe(3);
@@ -43,7 +41,9 @@ for(const level of levels) for(const lesson of lessons) test(level.id+' lesson '
  await page.getByRole('button',{name:'퀘스트 완료하고 배지 받기'}).click();
  await expect(page.getByRole('status')).toContainText('표현 활동');
  const count=practiceCount(lesson.id,level.id);
- for(let i=0;i<count;i++) await page.locator('textarea').nth(i).fill(modelLines[i]);
+ for(let i=0;i<count;i++){await page.locator('textarea').nth(i).fill(modelLines[i]);await page.locator('.writing-field').nth(i).getByRole('button',{name:'정답·표현 확인'}).click();}
+ await expect(page.getByRole('heading',{name:'쓰기 통과! 짝과 말하기'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'내 문장 듣기'})).toHaveCount(count);
  for(const box of await page.getByRole('checkbox').all())await box.check();
  await page.getByRole('button',{name:'퀘스트 완료하고 배지 받기'}).click();
  await expect(page.getByRole('button',{name:'배지 획득 완료!'})).toBeVisible();
