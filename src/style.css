@@ -12,3 +12,5 @@
 @media(max-width:700px){.speech-entry{grid-template-columns:1fr}.response-checks{grid-template-columns:1fr}.teacher-export{align-items:flex-start;flex-direction:column}.teacher-export button{width:100%}}
 
 .expression-check-button{margin-top:12px}.error-preview p{white-space:pre-wrap;font-size:14px;line-height:2}.error-preview mark{background:#ffe0dc;color:#a12f32;border-bottom:2px solid #d05a51;border-radius:3px;padding:2px}.response-example{background:#e4f5ec;color:#256849;padding:9px;border-radius:6px;font-size:13px!important}
+
+.pair-line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #dce9df}.pair-practice p,.pair-practice ol{font-size:13px;line-height:1.9}.writing-field>label>span{display:flex;gap:9px;font-size:13px;margin:10px 0}
