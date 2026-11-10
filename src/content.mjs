@@ -69,10 +69,43 @@ export function getExercises(lesson,level) {
   advanced?input('“나는 일주일에 네 번 그림을 그려요.”를 써요.','I draw pictures four times a week.','그림을 그리다: draw pictures'):choice('“주 3회”를 나타내는 표현은?', ['three times a week','three time a day','third a week'],'three times a week','three 뒤에는 times를 사용해요.'),
   order('짝에게 운동 빈도를 묻는 질문을 만들어요.','How often do you exercise?','질문 끝에는 물음표를 붙여요.')
  ];
- return rows.map((row,i)=>({...row,id:'q'+(i+1)}));
+ return rows.map((row,i)=>{
+  const exercise={...row,id:'q'+(i+1)};
+  if(exercise.type==='order'&&exercise.tokens){
+   const tokens=[...exercise.tokens];
+   for(let n=tokens.length-1;n>0;n--){const j=Math.floor(Math.random()*(n+1));[tokens[n],tokens[j]]=[tokens[j],tokens[n]];}
+   // Avoid accidentally showing a nearly solved sequence when shuffling short sentences.
+   if(tokens.join('|')===exercise.answer.split(' ').join('|')) tokens.reverse();
+   exercise.tokens=tokens;
+  }
+  return exercise;
+ });
 }
 export function normalize(value) { return String(value).normalize('NFKC').toLowerCase().trim().replace(/[.!?。！？]+$/g,'').replace(/\s+/g,' '); }
 export function isCorrect(value,answer) { return normalize(value)===normalize(answer); }
+// Formative checks look for lesson vocabulary and sentence patterns. They guide revision;
+// they are not a substitute for a teacher's judgment of meaning or pronunciation.
+export function assessExpression(value,lessonId) {
+ const text=String(value||'').trim();
+ const lower=normalize(text);
+ const hasActivity=/\b(eat vegetables|drink water|brush my teeth|brush your teeth|wash my hands|wash your hands|exercise|go to the library|read books|draw pictures|play badminton)\b/.test(lower);
+ const hasFrequency=/\b(every day|once a day|twice a day|three times a day|four times a day|once a week|twice a week|three times a week|four times a week)\b/.test(lower);
+ const hasQuestion=/\bhow often do you\b/.test(lower);
+ const hasEncouragement=/\bgood for you\b/.test(lower);
+ const activity='(?:eat vegetables|drink water|brush my teeth|wash my hands|exercise|go to the library|read books|draw pictures|play badminton)';
+ const freq='(?:every day|(?:once|twice|(?:three|four|five|six|seven) times) a (?:day|week))';
+ const sentences=text.split(/[.!?\n]+/).map(s=>s.trim().replace(/^[QA]:\s*/i,'')).filter(Boolean);
+ const hasSentenceStart=sentences.length>0&&sentences.every(s=>new RegExp('^(?:I '+activity+' '+freq+'|How often do you '+activity.replaceAll('my ','your ')+'|Good for you)$','i').test(s));
+ const dimensions=[];
+ dimensions.push({label:'활동 표현',ok:hasActivity,tip:'eat vegetables, read books처럼 어떤 활동인지 나타내요.'});
+ dimensions.push({label:'빈도 표현',ok:hasFrequency||hasQuestion,tip:'every day, twice a week처럼 얼마나 자주인지 나타내요.'});
+ dimensions.push({label:'문장·대화 틀',ok:hasSentenceStart&&(lessonId===1||hasQuestion||/\bi\b/.test(lower)||hasEncouragement),tip:'I … / How often do you …? 문장틀로 다시 읽어 보세요.'});
+ const score=dimensions.filter(d=>d.ok).length;
+ const tips=dimensions.filter(d=>!d.ok).map(d=>d.tip);
+ if(text && !/[.!?]$/.test(text)) tips.push('문장 끝에 마침표나 물음표를 붙여 보세요.');
+ if(!text) tips.push('응답을 입력하거나 말한 문장을 받아 적어 보세요.');
+ return {score,max:3,dimensions,tips,summary:score===3?'핵심 표현이 잘 보여요. 소리 내어 읽고 뜻이 맞는지 확인해요.':score===0?'표현 도움말을 보며 한 문장씩 다시 만들어 봐요.':'좋은 시작이에요. 안내된 표현을 보완해 다시 확인해요.'};
+}
 export const modelLines = ['I read books every day.','I draw pictures twice a week.','I go to the library once a week.','I exercise three times a week.','I play badminton twice a week.','I drink water every day.'];
 export const practicePrompts = {
  1:['내 생활 습관 한 가지를 활동 + 빈도로 써요.','다른 습관도 한 문장으로 쓰고 짝에게 읽어 주세요.'],
