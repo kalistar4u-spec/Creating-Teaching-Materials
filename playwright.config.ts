@@ -8,5 +8,5 @@ export default defineConfig({
  {name:'edge',use:{channel:'msedge',viewport:{width:1366,height:900}}},
  {name:'mobile',use:{channel:'chrome',viewport:{width:390,height:844},isMobile:true,hasTouch:true}}
  ],
- webServer:{command:'npm run dev -- --port 4173',url:'http://127.0.0.1:4173/Creating-Teaching-Materials/',reuseExistingServer:!process.env.CI,timeout:30000}
+ webServer:{command:`"${process.execPath}" node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173`,url:'http://127.0.0.1:4173/Creating-Teaching-Materials/',reuseExistingServer:!process.env.CI,timeout:30000}
 });
