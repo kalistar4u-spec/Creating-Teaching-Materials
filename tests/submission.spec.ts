@@ -4,7 +4,7 @@ test('student submits writing to the configured receiver and checks the receipt'
  const endpoint='https://script.google.com/macros/s/TEST/exec';
  await page.route('**/teacher-submission.json',route=>route.fulfill({json:{endpoint}}));
  let payload:any;
- await context.route(endpoint,async route=>{payload=JSON.parse(new URLSearchParams(route.request().postData()||'').get('payload')||'{}');await route.fulfill({contentType:'text/html',body:'<h1>제출 완료</h1>'});});
+ await context.route(endpoint,async route=>{payload=JSON.parse(new URLSearchParams(route.request().postData()||'').get('payload')||'{}');await route.fulfill({contentType:'text/html; charset=utf-8',body:'<meta charset="utf-8"><h1>제출 완료</h1>'});});
  await page.goto('#lesson-1');await page.getByRole('tab',{name:'3 말하고 쓰기'}).click();
  await expect(page.getByRole('button',{name:'선생님께 제출 · 새 창'})).toBeDisabled();
  await page.locator('textarea').nth(0).fill('I read books every day.');await page.locator('textarea').nth(1).fill('I exercise twice a week.');
